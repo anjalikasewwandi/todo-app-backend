@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using todo_app_backend.Data;
 
 namespace todo_app_backend.Models
 {
@@ -11,4 +13,5 @@ namespace todo_app_backend.Models
         public string Description { get; set; } = String.Empty;
         public string Status { get; set; } = String.Empty;
     }
+
 }
