@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -55,32 +56,27 @@ namespace todo_app_backend.Controllers
         [HttpPut("{title}")]
         public async Task<ActionResult<Item>> UpdateItem(string title, Item updatedItem)
         {
-            var item = await _appDbContext.Items.FirstOrDefaultAsync(e => e.Title == title);
-            if (item == null)
+            if (updatedItem != null && title == updatedItem.Title)
             {
-                return NotFound("Item not found");
+                _appDbContext.Entry(updatedItem).State = EntityState.Modified;
+                await _appDbContext.SaveChangesAsync();
+                return Ok(updatedItem);
             }
-
-            item.Description = updatedItem.Description;
-            item.Status = updatedItem.Status;
-
-            await _appDbContext.SaveChangesAsync();
-            return Ok(item);
+            return BadRequest("User not found");
         }
 
         // Delete item
         [HttpDelete("{title}")]
         public async Task<ActionResult> DeleteItem(string title)
         {
-            var item = await _appDbContext.Items.FirstOrDefaultAsync(e => e.Title == title);
-            if (item == null)
+            var user = await _appDbContext.Items.FindAsync(title);
+            if (user != null)
             {
-                return NotFound("Item not found");
+                _appDbContext.Items.Remove(user);
+                await _appDbContext.SaveChangesAsync();
+                return Ok();
             }
-
-            _appDbContext.Items.Remove(item);
-            await _appDbContext.SaveChangesAsync();
-            return Ok("Item deleted");
+            return NotFound("User not found");
         }
     }
 }
