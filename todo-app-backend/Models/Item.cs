@@ -8,7 +8,7 @@ namespace todo_app_backend.Models
     public class Item
     {
         [Key]
-        public string Title { get; set; } // This is now the primary key
+        public required string Title { get; set; } // This is now the primary key
 
         public string Description { get; set; } = String.Empty;
         public string Status { get; set; } = String.Empty;

@@ -21,13 +21,13 @@ namespace todo_app_backend.Controllers
 
         // Create
         [HttpPost]
-        public async Task<ActionResult<List<Item>>> AddItem(Item newItem)
+        public async Task<ActionResult<Item>> AddItem(Item newItem)
         {
             if (newItem != null)
             {
                 _appDbContext.Items.Add(newItem);
                 await _appDbContext.SaveChangesAsync();
-                return Ok(await _appDbContext.Items.ToListAsync());
+                return Ok(newItem);
             }
             return BadRequest("Object instance not set");
         }
@@ -53,30 +53,45 @@ namespace todo_app_backend.Controllers
         }
 
         // Update item
-        [HttpPut("{title}")]
-        public async Task<ActionResult<Item>> UpdateItem(string title, Item updatedItem)
+        [HttpPut("{oldTitle}")]
+        public async Task<ActionResult<Item>> UpdateItem(string oldTitle, Item updatedItem)
         {
-            if (updatedItem != null && title == updatedItem.Title)
+            var existingItem = await _appDbContext.Items.FirstOrDefaultAsync(e => e.Title == oldTitle);
+            if (existingItem == null)
             {
-                _appDbContext.Entry(updatedItem).State = EntityState.Modified;
-                await _appDbContext.SaveChangesAsync();
-                return Ok(updatedItem);
+                return NotFound("Item not found");
             }
-            return BadRequest("User not found");
+
+            // Check if the title has changed
+            if (oldTitle != updatedItem.Title)
+            {
+                // Remove the old item and add the updated item as new
+                _appDbContext.Items.Remove(existingItem);
+                _appDbContext.Items.Add(updatedItem);
+            }
+            else
+            {
+                // If the title hasn't changed, just update the other fields
+                existingItem.Description = updatedItem.Description;
+                existingItem.Status = updatedItem.Status;
+            }
+
+            await _appDbContext.SaveChangesAsync();
+            return Ok(updatedItem);
         }
 
         // Delete item
         [HttpDelete("{title}")]
         public async Task<ActionResult> DeleteItem(string title)
         {
-            var user = await _appDbContext.Items.FindAsync(title);
-            if (user != null)
+            var item = await _appDbContext.Items.FindAsync(title);
+            if (item != null)
             {
-                _appDbContext.Items.Remove(user);
+                _appDbContext.Items.Remove(item);
                 await _appDbContext.SaveChangesAsync();
                 return Ok();
             }
-            return NotFound("User not found");
+            return NotFound("Item not found");
         }
     }
 }
