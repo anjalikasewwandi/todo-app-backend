@@ -52,7 +52,6 @@ namespace todo_app_backend.Controllers
             return NotFound("Item is not available");
         }
 
-        // Update item
         [HttpPut("{oldTitle}")]
         public async Task<ActionResult<Item>> UpdateItem(string oldTitle, Item updatedItem)
         {
@@ -79,6 +78,7 @@ namespace todo_app_backend.Controllers
             await _appDbContext.SaveChangesAsync();
             return Ok(updatedItem);
         }
+
 
         // Delete item
         [HttpDelete("{title}")]
